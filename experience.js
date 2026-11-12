@@ -55,6 +55,15 @@
     }
     track.addEventListener('pointerup',release);
     track.addEventListener('pointercancel',release);
+    function cancelDrag(){
+      if(!pointer)return;
+      const drag=pointer;pointer=null;
+      track.classList.remove('is-dragging');track.style.removeProperty('scroll-snap-type');
+      if(track.hasPointerCapture(drag.id))track.releasePointerCapture(drag.id);
+      if(drag.dragging){blockClickUntil=performance.now()+350;go(current,true);}
+    }
+    track.addEventListener('lostpointercapture',cancelDrag);
+    window.addEventListener('blur',cancelDrag);
     track.addEventListener('pointerleave', e => { if(pointer&&!pointer.dragging&&e.pointerType==='mouse')pointer=null; });
     track.addEventListener('click', e => { if(performance.now()<blockClickUntil){e.preventDefault();e.stopImmediatePropagation();} },true);
     new ResizeObserver(() => { if(width!==track.clientWidth){width=track.clientWidth;go(current,true);} selected(); }).observe(track);

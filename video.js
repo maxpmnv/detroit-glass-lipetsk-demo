@@ -5,10 +5,12 @@
   dialog.className = 'film-dialog';
   dialog.setAttribute('aria-labelledby', 'film-video-title');
   dialog.innerHTML = `
-    <div class="film-panel">
+    <div class="film-toolbar">
       <button class="film-close" type="button" aria-label="Закрыть видео" autofocus>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
+    </div>
+    <div class="film-panel">
       <div class="film-media">
         <video class="film-player" controls playsinline preload="none"></video>
         <p class="film-status" role="status" aria-live="polite" hidden></p>
@@ -93,6 +95,7 @@
     if (!dialog.open) dialog.showModal();
     document.documentElement.classList.add('film-open');
     if (typeof lockPage === 'function') lockPage('film');
+    dialog.scrollTop = 0;
     closeButton.focus({ preventScroll: true });
 
     if (!mediaUrl) {

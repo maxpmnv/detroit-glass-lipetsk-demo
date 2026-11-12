@@ -31,11 +31,24 @@ html.film-open { overflow: hidden; }
   background: #111;
 }
 
+.film-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  height: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding-inline-end: max(12px, env(safe-area-inset-right));
+  pointer-events: none;
+}
+
 .film-close {
-  position: absolute;
+  position: relative;
+  flex: none;
+  pointer-events: auto;
   z-index: 2;
   inset-block-start: 12px;
-  inset-inline-end: 12px;
+  inset-inline-end: 0;
   display: grid;
   place-items: center;
   width: 44px;
@@ -107,7 +120,7 @@ html.film-open { overflow: hidden; }
   .film-panel { min-height: 100%; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(200px, 1fr) auto; }
   .film-media { padding-block-start: max(56px, env(safe-area-inset-top)); }
   .film-player { height: min(62svh, 600px); max-height: calc(100svh - 220px); min-height: 160px; }
-  .film-close { inset-block-start: max(8px, env(safe-area-inset-top)); inset-inline-end: max(12px, env(safe-area-inset-right)); }
+  .film-close { inset-block-start: max(8px, env(safe-area-inset-top)); inset-inline-end: 0; }
   .film-status { inset-block-start: 64px; }
   .film-copy { align-self: stretch; padding: 20px max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
   .film-eyebrow { margin-block-end: 7px; font-size: 11px; }
