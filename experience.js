@@ -79,6 +79,7 @@
     rail(hero,[...document.querySelectorAll('[data-hero-page]')],i=>{
       panels.forEach((panel,j)=>{panel.inert=i!==j;panel.setAttribute('aria-hidden',String(i!==j));});
       link.href=panels[i].dataset.serviceUrl;
+      document.querySelector('.hero-actions [data-callback]').dataset.service=panels[i].dataset.serviceUrl.replace('service-','').replace('.html','');
       link.setAttribute('aria-label','Об услуге: '+panels[i].dataset.serviceName);
     });
     let announce;
@@ -89,19 +90,15 @@
   }
 
   const card = document.querySelector('#demo-promo');
-  let prompted = false;
-  try { prompted = sessionStorage.getItem('detroit-promo-dismissed') === '1'; } catch { /* Storage is optional. */ }
-  function hide(remember = true) {
+  function hide() {
     card.hidden = true;
     document.querySelectorAll('[data-promo-open]').forEach(b => b.setAttribute('aria-expanded','false'));
-    if (remember) { prompted = true; try { sessionStorage.setItem('detroit-promo-dismissed','1'); } catch {} }
   }
   function show(manual = false) {
     if (document.querySelector('dialog[open]') || document.body.classList.contains('menu-is-open')) return;
-    prompted = true; card.hidden = false;
-    try { sessionStorage.setItem('detroit-promo-dismissed','1'); } catch {}
+    card.hidden = false;
     document.querySelectorAll('[data-promo-open]').forEach(b => b.setAttribute('aria-expanded','true'));
-    if (!reduce.matches) card.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'cubic-bezier(.22,1,.36,1)'});
+    if (!reduce.matches && !document.documentElement.classList.contains('keyboard-nav')) card.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'cubic-bezier(.22,1,.36,1)'});
     if (manual) card.querySelector('.promo-close').focus({preventScroll:true});
   }
   document.querySelectorAll('[data-promo-open]').forEach(button => {
@@ -112,16 +109,4 @@
   card.querySelector('.promo-close').addEventListener('click', () => { hide(); returnFocus(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !card.hidden) { hide(); returnFocus(); } });
   document.addEventListener('callback:open', () => hide());
-  const services = document.querySelector('.home-page #services');
-  if (services) {
-    let frame = false;
-    addEventListener('scroll', () => {
-      if (prompted || frame) return;
-      frame = true;
-      requestAnimationFrame(() => {
-        frame = false;
-        if (services.getBoundingClientRect().bottom < innerHeight * .4 && !document.documentElement.classList.contains('keyboard-nav')) show();
-      });
-    }, {passive: true});
-  }
 })();

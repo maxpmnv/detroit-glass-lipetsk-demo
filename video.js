@@ -123,7 +123,7 @@
     }
   });
 
-  closeButton.addEventListener('click', () => dialog.close());
+  closeButton.addEventListener('click', event => dismissDialog(dialog, event));
   dialog.addEventListener('cancel', (event) => {
     event.preventDefault();
     dialog.close();
@@ -132,7 +132,7 @@
     backdropPress = event.target === dialog && isOutside(event);
   });
   dialog.addEventListener('click', (event) => {
-    if (backdropPress && event.target === dialog && isOutside(event)) dialog.close();
+    if (backdropPress && event.target === dialog && isOutside(event)) dismissDialog(dialog, event);
     backdropPress = false;
   });
   dialog.addEventListener('close', () => {
