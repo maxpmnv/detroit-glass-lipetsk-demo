@@ -1,18 +1,4 @@
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-const slides=[
-{title:'Реставрация<br>автостекла в Липецке',text:'Полировка стекла, ремонт сколов и восстановление фар.<br>Студия DETROIT на Баумана, 212.',image:'detroit-campaign-hero.png',caption:'Постановочный визуал: автомобиль в тёмном боксе'},
-{title:'Восстановление<br>и защита фар',text:'Головные фары, противотуманная оптика и задние фонари.<br>Полировка и защита полиуретановой плёнкой.',image:'lights-restored.png',caption:'Фото для каталога: фары Renault Logan, улучшение с ИИ'},
-{title:'Стекло.<br>Внимание к деталям.',text:'Следы дворников, глубокие царапины, сколы и трещины.<br>Работа начинается с оценки повреждений.',image:'glass-restored.png',caption:'Фото для каталога: стекло Renault Kaptur, улучшение с ИИ'},
-{title:'Уход за салоном<br>вашего автомобиля',text:'Полная и частичная химчистка.<br>Салон, багажник и отдельные зоны.',image:'interior-restored.png',caption:'Фото для каталога: салон OMODA, улучшение с ИИ'}];
-let index=0,version=0;const base=document.querySelector('#hero-image'),nextImage=document.querySelector('#hero-image-next'),scene=document.querySelector('.scenery');
-// Decode first; a newer click invalidates pending work. No timer locks or stacked animations.
-async function change(delta,event){index=(index+delta+slides.length)%slides.length;const request=++version,slide=slides[index];const image=new Image();image.src='assets/'+slide.image;try{await image.decode()}catch{return}if(request!==version)return;
-const instant=reduced.matches||event.detail===0;nextImage.style.transitionDuration=instant?'0ms':'450ms';
-base.src=nextImage.classList.contains('visible')?nextImage.src:base.src;nextImage.classList.remove('visible');
-scene.classList.toggle('lights',index===1);nextImage.src=image.src;base.alt=slide.caption;document.querySelector('#hero-title').innerHTML=slide.title;document.querySelector('#hero-description').innerHTML=slide.text;document.querySelectorAll('[data-hero-page]').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
-requestAnimationFrame(()=>requestAnimationFrame(()=>{if(request===version)nextImage.classList.add('visible')}));}
-
-if(base)document.querySelectorAll('[data-hero-page]').forEach(b=>b.addEventListener('click',e=>change(Number(b.dataset.heroPage)-index,e)));
 const header=document.querySelector('#site-header'),menu=document.querySelector('.menu-toggle'),nav=document.querySelector('#site-navigation');
 const mobileNav=matchMedia('(max-width: 900px)'),pageLocks=new Set();let lockedY=0;
 function lockPage(owner){if(!pageLocks.size){lockedY=scrollY;document.body.style.setProperty('--locked-y',`-${lockedY}px`);document.documentElement.classList.add('page-locked')}pageLocks.add(owner)}
@@ -28,13 +14,19 @@ header.addEventListener('keydown',e=>{if(e.key!=='Tab'||!header.classList.contai
 document.addEventListener('pointerdown',()=>document.documentElement.classList.remove('keyboard-nav'));
 function updateHeader(){header.classList.toggle('scrolled',scrollY>30)}addEventListener('scroll',updateHeader,{passive:true});updateHeader();
 function animateOnce(el,keyframes,options){if(reduced.matches||document.documentElement.classList.contains('keyboard-nav'))return;el.getAnimations().forEach(a=>a.cancel());el.animate(keyframes,options)}
+nav.querySelectorAll('.nav-group').forEach(group=>group.addEventListener('toggle',()=>{
+if(!group.open)return;
+nav.querySelectorAll('.nav-group').forEach(other=>{if(other!==group)other.open=false});
+const panel=group.querySelector('.mega-menu,.nav-dropdown');
+if(panel&&!mobileNav.matches)animateOnce(panel,[{opacity:0,transform:'translateY(-5px)'},{opacity:1,transform:'translateY(0)'}],{duration:180,easing:'cubic-bezier(.23,1,.32,1)'});
+}));
 const dialog=document.querySelector('#callback'),form=document.querySelector('#callback-form'),view=document.querySelector('.callback-form-view'),success=document.querySelector('.callback-success');let trigger=null;
 const clientName=document.querySelector('#client-name'),clientPhone=document.querySelector('#client-phone'),clientService=document.querySelector('#client-service');
 function clearErrors(){document.querySelectorAll('.field-error').forEach(e=>e.textContent='');form.querySelectorAll('[aria-invalid]').forEach(e=>e.removeAttribute('aria-invalid'))}
 function showForm(){view.hidden=false;success.hidden=true;clearErrors()}
 document.querySelectorAll('[data-callback]').forEach(button=>button.addEventListener('click',e=>{e.preventDefault();trigger=button;closeMenu();nav.querySelectorAll('details').forEach(d=>d.open=false);showForm();clientService.value=button.dataset.service||'consult';document.querySelector('#callback-title').textContent=button.dataset.offer?'Заявка по акции':'Обратный звонок';const context=document.querySelector('.callback-context');context.hidden=!button.dataset.offer;context.textContent=button.dataset.offer||'';document.dispatchEvent(new Event('callback:open'));dialog.showModal();lockPage('callback');dialog.scrollTop=0;if(e.detail)animateOnce(dialog,[{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'cubic-bezier(.23,1,.32,1)'});(mobileNav.matches?document.querySelector('#callback-title'):clientName).focus({preventScroll:true})}));
 dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
-dialog.addEventListener('close',()=>{unlockPage('callback');form.reset();clearErrors();const target=trigger?.getClientRects().length?trigger:document.querySelector('[data-promo-open]');target?.focus({preventScroll:true})});
+dialog.addEventListener('close',()=>{unlockPage('callback');form.reset();clearErrors();const target=trigger?.getClientRects().length?trigger:menu.getClientRects().length?menu:document.querySelector('[data-promo-open]');target?.focus({preventScroll:true})});
 dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
 form.addEventListener('submit',e=>{e.preventDefault();clearErrors();const badName=clientName.value.trim().length<2,badPhone=!/^[78]\d{10}$/.test(clientPhone.value.replace(/\D/g,''));
 if(badName){document.querySelector('#name-error').textContent='Введите имя — не менее двух символов.';clientName.setAttribute('aria-invalid','true')}
